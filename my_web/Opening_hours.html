@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opening Hours</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      padding: 0.9rem 2rem;
+      background: #ffffff;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1D9E75;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .logo img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    /* PAGE CONTENT */
+    .page {
+      display: flex;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0 0 1rem;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 12px;
+      margin-bottom: 6px;
+      border-left: 3px solid transparent;
+    }
+
+    .row.today-open {
+      background: #e8f5e9;
+      border-left: 3px solid #2e7d32;
+    }
+
+    .row.today-closed {
+      background: #ffebee;
+      border-left: 3px solid #c62828;
+    }
+
+    .day-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      min-width: 90px;
+    }
+
+    .right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hours-text {
+      font-size: 13px;
+      color: #666;
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .badge-open {
+      background: #c8e6c9;
+      color: #1b5e20;
+      border: 1px solid #a5d6a7;
+    }
+
+    .badge-closed {
+      background: #ffcdd2;
+      color: #b71c1c;
+      border: 1px solid #ef9a9a;
+    }
+  </style>
+</head>
+<body>
+<!-- 
+<nav class="navbar">
+  <div class="logo">
+    <img class="logo-img w-1 h-1" src="./public/file.png" />
+    Azeroual Dental Centre
+  </div>
+
+  <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="/home.html">Home</a></li>
+    <li><a href="/Services.html">Services</a></li>
+    <li><a href="/About.html">About</a></li>
+    <li><a href="/Testimonials.html">Testimonials</a></li>
+    <li><a href="/Contact.html">Contact</a></li>
+    <li><a href="/Opening_hours.html">Opening hours</a></li>
+  </ul>
+</nav> -->
+<script>
+function toggleMenu() {
+  document.getElementById("navLinks").classList.toggle("active");
+}
+</script>
+
+  <div class="page">
+    <div class="card">
+      <p class="card-title">Opening Hours</p>
+      <div id="schedule"></div>
+    </div>
+  </div>
+
+  <script>
+    const schedule = [
+      { day: 1, name: "Monday",    slots: [[9,13],[15.5,20]] },
+      { day: 2, name: "Tuesday",   slots: [[9,13],[15.5,20]] },
+      { day: 3, name: "Wednesday", slots: [[9,13],[15.5,20]] },
+      { day: 4, name: "Thursday",  slots: [[9,13],[15.5,20]] },
+      { day: 5, name: "Friday",    slots: [[9,13],[15.5,20]] },
+      { day: 6, name: "Saturday",  slots: [[9,13]] },
+      { day: 0, name: "Sunday",    slots: [] },
+    ];
+
+    function fmt(h) {
+      const hh = Math.floor(h);
+      const mm = Math.round((h - hh) * 60);
+      return hh.toString().padStart(2,'0') + ':' + mm.toString().padStart(2,'0');
+    }
+
+    const now = new Date();
+    const today = now.getDay();
+    const time = now.getHours() + now.getMinutes() / 60;
+    const container = document.getElementById('schedule');
+
+    schedule.forEach(entry => {
+      const isToday = entry.day === today;
+      const isOpen = isToday && entry.slots.some(([s,e]) => time >= s && time < e);
+      const isClosed = isToday && !isOpen;
+
+      const row = document.createElement('div');
+      row.className = 'row' + (isOpen ? ' today-open' : isClosed ? ' today-closed' : '');
+
+      const daySpan = document.createElement('span');
+      daySpan.className = 'day-name';
+      daySpan.textContent = entry.name;
+
+      const right = document.createElement('div');
+      right.className = 'right';
+
+      const hoursSpan = document.createElement('span');
+      hoursSpan.className = 'hours-text';
+      if (entry.slots.length === 0) {
+        hoursSpan.textContent = 'Closed';
+      } else {
+        hoursSpan.innerHTML = entry.slots.map(([s,e]) => fmt(s) + ' – ' + fmt(e)).join('<br>');
+      }
+
+      right.appendChild(hoursSpan);
+
+      if (isToday) {
+        const badge = document.createElement('span');
+        badge.className = 'badge ' + (isOpen ? 'badge-open' : 'badge-closed');
+        badge.textContent = isOpen ? 'Open now' : 'Closed now';
+        right.appendChild(badge);
+      }
+
+      row.appendChild(daySpan);
+      row.appendChild(right);
+      container.appendChild(row);
+    });
+  </script>
+<!-- 
+<footer>
+  <div class="footer-grid">
+    <div>
+      <h4>Azeroual Dental Centre</h4>
+      <p>Professional dentist in Khouribga — Your smile, our priority. Modern dental clinic offering comprehensive care.</p>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <p>Imm 12 Appt B-1, 1st floor<br>Al Firdaous Complex — Khouribga</p>
+      <a href="tel:+212600464612">+212 6 00 46 46 12</a>
+    </div>
+    <div>
+      <h4>Opening hours</h4>
+      <p>Mon – Wed: 09:00 – 20:00</p>
+      <p>Thu: 09:00 – 13:00 / 15:30 – 20:00</p>
+      <p>Fri – Sat: 09:00 – 13:00</p>
+      <p>Sun: Closed</p>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2025 Azeroual Dental Centre. All rights reserved.</div>
+</footer> -->
+</body>
+</html>
